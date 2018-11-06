@@ -19,7 +19,6 @@ from practice_data import data
 
 
 average_dict = {
-    'count': 0,
     'assists': 0,
     'damage': 0,
     'headshots': 0,
@@ -32,10 +31,24 @@ average_dict = {
 
 def filter_players(input):
     """Begin the program."""
+    count = 0
     player_list = input['included']
     for i in range(len(player_list)):
         if player_list[i]['type'] == 'participant':
-            average_dict['count'] += 1
-            print(player_list[i]['attributes']['stats']['name'])
-        # stats = player_list[0]['attributes']['stats']
-    # return players
+            stats = player_list[i]['attributes']['stats']
+            count += 1
+            average_dict['assists'] += stats['assists']
+            average_dict['damage'] += stats['damageDealt']
+            average_dict['headshots'] += stats['headshotKills']
+            average_dict['kill_place'] += stats['killPlace']
+            average_dict['kill_points'] += stats['killPoints']
+            average_dict['kills'] += stats['kills']
+            average_dict['longest_kill'] += stats['longestKill']
+    find_average(average_dict, count)
+    return count
+
+
+def find_average(input_dict, count):
+    """Find the average of dictionary values."""
+    for key in input_dict:
+        input_dict[key] = input_dict[key] / count
