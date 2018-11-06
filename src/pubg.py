@@ -2,6 +2,7 @@
 import requests
 import os
 from practice_data import data
+from statistics import mean
 
 # url = "https://api.pubg.com/shards/xbox-na/matches/50e82100-bbfb-4499-be93-a8af7cb6d63c"
 # url = "https://api.pubg.com/shards/xbox-na/samples"
@@ -29,7 +30,7 @@ player_stats_dict = {
 }
 
 
-def filter_players(input):
+def filter_player_data(input):
     """Begin the program."""
     count = 0
     player_list = input['included']
@@ -44,7 +45,7 @@ def filter_players(input):
             player_stats_dict['kill_points'].append(stats['killPoints'])
             player_stats_dict['kills'].append(stats['kills'])
             player_stats_dict['longest_kill'].append(stats['longestKill'])
-    print(max(player_stats_dict['kills']))
+    print(mean(player_stats_dict['kills']))
     # find_average(average_dict, count)
 
 
