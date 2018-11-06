@@ -18,14 +18,14 @@ from practice_data import data
 # response_dict = r.json()
 
 
-average_dict = {
-    'assists': 0,
-    'damage': 0,
-    'headshots': 0,
-    'kill_place': 0,
-    'kill_points': 0,
-    'kills': 0,
-    'longest_kill': 0,
+player_stats_dict = {
+    'assists': [],
+    'damage': [],
+    'headshots': [],
+    'kill_place': [],
+    'kill_points': [],
+    'kills': [],
+    'longest_kill': [],
 }
 
 
@@ -37,15 +37,15 @@ def filter_players(input):
         if player_list[i]['type'] == 'participant':
             stats = player_list[i]['attributes']['stats']
             count += 1
-            average_dict['assists'] += stats['assists']
-            average_dict['damage'] += stats['damageDealt']
-            average_dict['headshots'] += stats['headshotKills']
-            average_dict['kill_place'] += stats['killPlace']
-            average_dict['kill_points'] += stats['killPoints']
-            average_dict['kills'] += stats['kills']
-            average_dict['longest_kill'] += stats['longestKill']
-    find_average(average_dict, count)
-    return count
+            player_stats_dict['assists'].append(stats['assists'])
+            player_stats_dict['damage'].append(stats['damageDealt'])
+            player_stats_dict['headshots'].append(stats['headshotKills'])
+            player_stats_dict['kill_place'].append(stats['killPlace'])
+            player_stats_dict['kill_points'].append(stats['killPoints'])
+            player_stats_dict['kills'].append(stats['kills'])
+            player_stats_dict['longest_kill'].append(stats['longestKill'])
+    print(max(player_stats_dict['kills']))
+    # find_average(average_dict, count)
 
 
 def find_average(input_dict, count):
