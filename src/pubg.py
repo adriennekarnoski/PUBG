@@ -24,12 +24,12 @@ player_stats_dict = {
 
 # url = 'https://api.playbattlegrounds.com/shards/xbox-na/players/account.a831af1196724930be51689635846ba2'
 
-# api_key = os.environ.get('API_KEY')
+api_key = os.environ.get('API_KEY')
 
-# header = {
-#   "Authorization": "Bearer " + api_key,
-#   "Accept": "application/vnd.api+json"
-# }
+header = {
+  "Authorization": "Bearer " + api_key,
+  "Accept": "application/vnd.api+json"
+}
 
 # r = requests.get(url, headers=header)
 # response_dict = r.json()
@@ -39,11 +39,6 @@ player_stats_dict = {
 
 def make_api_call(type, data):
     """Function to make api and return response dictionary."""
-    api_key = os.environ.get('API_KEY')
-    header = {
-      "Authorization": "Bearer " + api_key,
-      "Accept": "application/vnd.api+json"
-    }
     if type == 'gamertag':
         url = "https://api.pubg.com/shards/xbox-na/players?filter[playerNames]={}".format(data)
     if type == 'match':
@@ -57,7 +52,7 @@ def get_player_match_id():
     """Function to make api with a given parameter."""
     gamertag = input('Please enter your gamertag: ')
     response_matches = make_api_call('gamertag', gamertag)
-    match_id = response_matches['data']['relationships']['matches']['data'][0]['id']
+    match_id = response_matches['data'][0]['relationships']['matches']['data'][0]['id']
     response_game_data = make_api_call('match', match_id)
     return response_game_data
 
