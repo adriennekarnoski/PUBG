@@ -5,27 +5,6 @@ from practice_data import data
 from statistics import mean
 import json
 
-
-# Use to get a random list of matches
-# url = "https://api.pubg.com/shards/xbox-na/samples"
-
-# Use to get information about a specific match
-url = "https://api.pubg.com/shards/xbox-na/matches/17d001b7-bddb-489c-8001-d7228578128f"
-
-#Use to find my matches
-# url = "https://api.pubg.com/shards/xbox-na/players?filter[playerNames]=ehhhdrienne"
-
-api_key = os.environ.get('API_KEY')
-
-header = {
-  "Authorization": "Bearer " + api_key,
-  "Accept": "application/vnd.api+json"
-}
-
-r = requests.get(url, headers=header)
-response_dict = r.json()
-
-
 player_stats_dict = {
     'assists': [],
     'damage': [],
@@ -36,6 +15,51 @@ player_stats_dict = {
     'longest_kill': [],
     'name': []
 }
+
+# Use to get a random list of matches
+# url = "https://api.pubg.com/shards/xbox-na/samples"
+
+# Use to get information about a specific match
+# url = "https://api.pubg.com/shards/xbox-na/matches/17d001b7-bddb-489c-8001-d7228578128f"
+
+# url = 'https://api.playbattlegrounds.com/shards/xbox-na/players/account.a831af1196724930be51689635846ba2'
+
+# api_key = os.environ.get('API_KEY')
+
+# header = {
+#   "Authorization": "Bearer " + api_key,
+#   "Accept": "application/vnd.api+json"
+# }
+
+# r = requests.get(url, headers=header)
+# response_dict = r.json()
+
+# response_dict['data']['relationships']['matches']['data'][0]['id']
+
+
+def make_api_call(type, data):
+    """Function to make api and return response dictionary."""
+    api_key = os.environ.get('API_KEY')
+    header = {
+      "Authorization": "Bearer " + api_key,
+      "Accept": "application/vnd.api+json"
+    }
+    if type == 'gamertag':
+        url = "https://api.pubg.com/shards/xbox-na/players?filter[playerNames]={}".format(data)
+    if type == 'match':
+        url = "https://api.pubg.com/shards/xbox-na/matches/{}".format(data)
+    r = requests.get(url, headers=header)
+    response_dict = r.json()
+    return response_dict
+
+
+def get_player_match_id():
+    """Function to make api with a given parameter."""
+    gamertag = input('Please enter your gamertag: ')
+    response_matches = make_api_call('gamertag', gamertag)
+    match_id = response_matches['data']['relationships']['matches']['data'][0]['id']
+    response_game_data = make_api_call('match', match_id)
+    return response_game_data
 
 
 def filter_player_data(input):
