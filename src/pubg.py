@@ -16,6 +16,10 @@ player_stats_dict = {
     'name': []
 }
 
+personal_player_data = {}
+
+game_data_dict = {}
+
 # Use to get a random list of matches
 # url = "https://api.pubg.com/shards/xbox-na/samples"
 
@@ -37,28 +41,34 @@ header = {
 # response_dict['data']['relationships']['matches']['data'][0]['id']
 
 
-def make_api_call(type, data):
-    """Function to make api and return response dictionary."""
-    if type == 'gamertag':
-        url = "https://api.pubg.com/shards/xbox-na/players?filter[playerNames]={}".format(data)
-    if type == 'match':
-        url = "https://api.pubg.com/shards/xbox-na/matches/{}".format(data)
-    r = requests.get(url, headers=header)
-    response_dict = r.json()
-    return response_dict
+# def make_api_call(type, data):
+#     """Function to make api call and return response dictionary."""
+#     if type == 'gamertag':
+#         url = "https://api.pubg.com/shards/xbox-na/players?filter[playerNames]={}".format(data)
+#     if type == 'match':
+#         url = "https://api.pubg.com/shards/xbox-na/matches/{}".format(data)
+#     r = requests.get(url, headers=header)
+#     response_dict = r.json()
+#     return response_dict
 
 
-def get_player_match_id():
-    """Function to make api with a given parameter."""
-    gamertag = input('Please enter your gamertag: ')
-    response_matches = make_api_call('gamertag', gamertag)
-    match_id = response_matches['data'][0]['relationships']['matches']['data'][0]['id']
-    response_game_data = make_api_call('match', match_id)
-    return response_game_data
+# def get_player_match_id():
+#     """Function to get user gamertag and call make_api_call()."""
+#     gamertag = input('Please enter your gamertag: ')
+#     player_information_dict['gamertag'] = gamertag
+#     response_matches = make_api_call('gamertag', gamertag)
+#     match_id = response_matches['data'][0]['relationships']['matches']['data'][0]['id']
+#     response_game_data = make_api_call('match', match_id)
+#     return filter_player_data(response_game_data)
 
+
+def filter_game_data(input):
+    """Filter out information about the game."""
+    game = input['data']['attributs']
+    game_data_dict['dat']
 
 def filter_player_data(input):
-    """Begin the program."""
+    """Function that takes in api response and filters out necessary data."""
     count = 0
     player_list = input['included']
     for i in range(len(player_list)):
@@ -73,10 +83,11 @@ def filter_player_data(input):
             player_stats_dict['kills'].append(stats['kills'])
             player_stats_dict['longest_kill'].append(stats['longestKill'])
             player_stats_dict['name'].append(stats['name'])
-    # print_average(player_stats_dict)
+    get_player_stats(player_stats_dict)
 
 
-# def print_average(input_dict):
-#     """Print the average of dictionary values."""
-#     for k, v in input_dict.items():
-#         print("Average {}: {}".format(k, mean(v)))
+def get_player_stats(input_dict):
+    """Print the average of dictionary values."""
+    player_index = input_dict['name'].index(personal_player_data['gamertag'])
+    for k, v in input_dict.items():
+        personal_player_data[k] = v[player_index]
