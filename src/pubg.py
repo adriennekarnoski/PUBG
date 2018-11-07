@@ -65,44 +65,6 @@ header = {
 #     response_game_data = make_api_call('match', match_id)
 #     return filter_player_data(response_game_data)
 
-def run_stats(input):
-    filter_game_data(input)
-    filter_player_data(input)
-    response = """
-        {}'s Last Match
-
-        Total Game Duration: {}
-        Date: {}
-        Map: {}
-
-        Win Place: {}
-        Win Points: {}
-        Death By: {}
-        Time Survived: {}
-
-        Kills: {}
-        Assists: {}
-        Damage Dealt: {}
-        Headshots: {}
-        Longest Kill: {} 
-        Weapons Acquired: {}""".format(
-        personal_player_data['gamertag'],
-        game_data_dict['duration'],
-        game_data_dict['date'],
-        game_data_dict['map'],
-        personal_player_data['win_place'],
-        personal_player_data['win_points'],
-        personal_player_data['death'],
-        personal_player_data['time_survived'],
-        personal_player_data['kills'],
-        personal_player_data['assists'],
-        personal_player_data['damage'],
-        personal_player_data['headshots'],
-        personal_player_data['longest_kill'],
-        personal_player_data['weapons']
-    )
-    print(response)
-
 
 def filter_game_data(input):
     """Filter out information about the game."""
@@ -112,9 +74,8 @@ def filter_game_data(input):
     time = datetime.strptime(game_time, f)
     s = time.strftime('%a, %b %d')
     game_data_dict['date'] = s
-    seconds = "{0:.2f}".format(game['duration'] / 60)
-    minutes = seconds.split('.')
-    game_data_dict['duration'] = '{} minutes and {} seconds'.format(minutes[0], minutes[1])
+    game_duration = game['duration']
+    game_data_dict['duration'] = seconds_to_minutes(game_duration)
     if game['mapName'] == 'Desert_Main':
         game_data_dict['map'] = 'Miramar'
     if game['mapName'] == 'Savage_Main':
@@ -150,10 +111,65 @@ def get_player_stats(input_dict):
     player_index = input_dict['name'].index(personal_player_data['gamertag'])
     for k, v in input_dict.items():
         personal_player_data[k] = v[player_index]
+    edit_player_dict_values(personal_player_data)
+
+
+def edit_player_dict_values(input):
+    """Change the layout of various values in player dictionary."""
     if personal_player_data['death'] is 'byplayer':
         personal_player_data['death'] = 'Player'
     else:
-        personal_player_data['death'] = personal_player_data['death'].title()   
-    seconds = "{0:.2f}".format(personal_player_data['time_survived'] / 60)
+        personal_player_data['death'] = personal_player_data['death'].title()
+    player_survived = personal_player_data['time_survived']
+    personal_player_data['time_survived'] = seconds_to_minutes(player_survived)
+    longest_kill = personal_player_data['longest_kill']
+    personal_player_data['longest_kill'] = "{0:.2f}".format(longest_kill)
+
+
+def seconds_to_minutes(seconds):
+    """Function that takes seconds and converts to minutes."""
+    seconds = "{0:.2f}".format(seconds / 60)
     minutes = seconds.split('.')
-    personal_player_data['time_survived'] = '{} minutes and {} seconds'.format(minutes[0], minutes[1])
+    if int(minutes[1]) >= 60:
+        minutes[0] = int(minutes[0]) + 1
+        minutes[1] = int(minutes[1]) - 60
+    return '{} minutes and {} seconds'.format(minutes[0], minutes[1])
+
+
+def respond_to_user(input):
+    filter_game_data(input)
+    filter_player_data(input)
+    response = """
+        {}'s Last Match
+
+        Game Duration: {}
+        Date: {}
+        Map: {}
+
+        Win Place: {}
+        Win Points: {}
+        Death By: {}
+        Time Survived: {}
+
+        Kills: {}
+        Assists: {}
+        Damage Dealt: {}
+        Headshots: {}
+        Longest Kill: {} meters
+        Weapons Acquired: {}""".format(
+        personal_player_data['gamertag'],
+        game_data_dict['duration'],
+        game_data_dict['date'],
+        game_data_dict['map'],
+        personal_player_data['win_place'],
+        personal_player_data['win_points'],
+        personal_player_data['death'],
+        personal_player_data['time_survived'],
+        personal_player_data['kills'],
+        personal_player_data['assists'],
+        personal_player_data['damage'],
+        personal_player_data['headshots'],
+        personal_player_data['longest_kill'],
+        personal_player_data['weapons']
+    )
+    print(response)
