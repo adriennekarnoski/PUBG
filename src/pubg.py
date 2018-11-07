@@ -11,10 +11,12 @@ player_stats_dict = {
     'damage': [],
     'death': [],
     'headshots': [],
-    'kill_place': [],
-    'kill_points': [],
+    'win_place': [],
+    'win_points': [],
     'kills': [],
     'longest_kill': [],
+    'time_survived': [],
+    'weapons': [],
     'name': []
 }
 
@@ -73,27 +75,31 @@ def run_stats(input):
         Date: {}
         Map: {}
 
-        Kill Place: {}
-        Kill Points: {}
+        Win Place: {}
+        Win Points: {}
         Death By: {}
+        Time Survived: {}
 
         Kills: {}
         Assists: {}
-        Total Damage Dealt: {}
+        Damage Dealt: {}
         Headshots: {}
-        Longest Kill: {} """.format(
+        Longest Kill: {} 
+        Weapons Acquired: {}""".format(
         personal_player_data['gamertag'],
         game_data_dict['duration'],
         game_data_dict['date'],
         game_data_dict['map'],
-        personal_player_data['kill_place'],
-        personal_player_data['kill_points'],
+        personal_player_data['win_place'],
+        personal_player_data['win_points'],
         personal_player_data['death'],
+        personal_player_data['time_survived'],
         personal_player_data['kills'],
         personal_player_data['assists'],
         personal_player_data['damage'],
         personal_player_data['headshots'],
-        personal_player_data['longest_kill']
+        personal_player_data['longest_kill'],
+        personal_player_data['weapons']
     )
     print(response)
 
@@ -129,10 +135,12 @@ def filter_player_data(input):
             player_stats_dict['damage'].append(stats['damageDealt'])
             player_stats_dict['death'].append(stats['deathType'])
             player_stats_dict['headshots'].append(stats['headshotKills'])
-            player_stats_dict['kill_place'].append(stats['killPlace'])
-            player_stats_dict['kill_points'].append(stats['killPoints'])
+            player_stats_dict['win_place'].append(stats['winPlace'])
+            player_stats_dict['win_points'].append(stats['winPoints'])
             player_stats_dict['kills'].append(stats['kills'])
             player_stats_dict['longest_kill'].append(stats['longestKill'])
+            player_stats_dict['time_survived'].append(stats['timeSurvived'])
+            player_stats_dict['weapons'].append(stats['weaponsAcquired'])
             player_stats_dict['name'].append(stats['name'])
     get_player_stats(player_stats_dict)
 
@@ -143,6 +151,9 @@ def get_player_stats(input_dict):
     for k, v in input_dict.items():
         personal_player_data[k] = v[player_index]
     if personal_player_data['death'] is 'byplayer':
-        personal_player_data['death'] = 'By Player'
+        personal_player_data['death'] = 'Player'
     else:
-        personal_player_data['death'] = personal_player_data['death'].title()
+        personal_player_data['death'] = personal_player_data['death'].title()   
+    seconds = "{0:.2f}".format(personal_player_data['time_survived'] / 60)
+    minutes = seconds.split('.')
+    personal_player_data['time_survived'] = '{} minutes and {} seconds'.format(minutes[0], minutes[1])
