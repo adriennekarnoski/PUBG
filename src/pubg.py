@@ -4,10 +4,12 @@ import os
 from practice_data import data
 from statistics import mean
 import json
+from datetime import datetime
 
 player_stats_dict = {
     'assists': [],
     'damage': [],
+    'death': [],
     'headshots': [],
     'kill_place': [],
     'kill_points': [],
@@ -61,11 +63,59 @@ header = {
 #     response_game_data = make_api_call('match', match_id)
 #     return filter_player_data(response_game_data)
 
+def run_stats(input):
+    filter_game_data(input)
+    filter_player_data(input)
+    response = """
+        {}'s Last Match
+
+        Total Game Duration: {}
+        Date: {}
+        Map: {}
+
+        Kill Place: {}
+        Kill Points: {}
+        Death By: {}
+
+        Kills: {}
+        Assists: {}
+        Total Damage Dealt: {}
+        Headshots: {}
+        Longest Kill: {} """.format(
+        personal_player_data['gamertag'],
+        game_data_dict['duration'],
+        game_data_dict['date'],
+        game_data_dict['map'],
+        personal_player_data['kill_place'],
+        personal_player_data['kill_points'],
+        personal_player_data['death'],
+        personal_player_data['kills'],
+        personal_player_data['assists'],
+        personal_player_data['damage'],
+        personal_player_data['headshots'],
+        personal_player_data['longest_kill']
+    )
+    print(response)
+
 
 def filter_game_data(input):
     """Filter out information about the game."""
-    game = input['data']['attributs']
-    game_data_dict['dat']
+    game = input['data']['attributes']
+    game_time = game['createdAt']
+    f = "%Y-%m-%dT%H:%M:%SZ"
+    time = datetime.strptime(game_time, f)
+    s = time.strftime('%a, %b %d')
+    game_data_dict['date'] = s
+    seconds = "{0:.2f}".format(game['duration'] / 60)
+    minutes = seconds.split('.')
+    game_data_dict['duration'] = '{} minutes and {} seconds'.format(minutes[0], minutes[1])
+    if game['mapName'] == 'Desert_Main':
+        game_data_dict['map'] = 'Miramar'
+    if game['mapName'] == 'Savage_Main':
+        game_data_dict['map'] = 'Sanhok'
+    map_name = game['mapName'].split('_')
+    game_data_dict['map'] = map_name[0]
+
 
 def filter_player_data(input):
     """Function that takes in api response and filters out necessary data."""
@@ -77,6 +127,7 @@ def filter_player_data(input):
             count += 1
             player_stats_dict['assists'].append(stats['assists'])
             player_stats_dict['damage'].append(stats['damageDealt'])
+            player_stats_dict['death'].append(stats['deathType'])
             player_stats_dict['headshots'].append(stats['headshotKills'])
             player_stats_dict['kill_place'].append(stats['killPlace'])
             player_stats_dict['kill_points'].append(stats['killPoints'])
@@ -91,3 +142,7 @@ def get_player_stats(input_dict):
     player_index = input_dict['name'].index(personal_player_data['gamertag'])
     for k, v in input_dict.items():
         personal_player_data[k] = v[player_index]
+    if personal_player_data['death'] is 'byplayer':
+        personal_player_data['death'] = 'By Player'
+    else:
+        personal_player_data['death'] = personal_player_data['death'].title()
