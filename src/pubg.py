@@ -173,3 +173,30 @@ def respond_to_user(input):
         personal_player_data['weapons']
     )
     print(response)
+    other_players()
+
+
+def other_players():
+    """Information on other players in the game."""
+    average_kills = round(mean(player_stats_dict['kills']))
+    average_headshots = round(mean(player_stats_dict['headshots']))
+    average_time_survived = seconds_to_minutes(mean(player_stats_dict['time_survived']))
+    longest_kill_rounded = "{0:.2f}".format(max(player_stats_dict['longest_kill']))
+    response = """
+        Average Kills: {}
+        Average Headshots: {}
+        Average Survival Time: {}
+
+        Most Kills: {}
+        Most Headshots: {}
+        Highest Damage: {}
+        Longest Kill: {} meters """.format(
+            average_kills,
+            average_headshots,
+            average_time_survived,
+            max(player_stats_dict['kills']),
+            max(player_stats_dict['headshots']),
+            max(player_stats_dict['damage']),
+            longest_kill_rounded
+        )
+    print(response)
