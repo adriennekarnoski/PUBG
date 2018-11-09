@@ -59,9 +59,13 @@ def get_player_match_id():
     gamertag = input('Please enter your gamertag: ')
     personal_player_data['gamertag'] = gamertag
     response_matches = make_api_call('gamertag', gamertag)
-    # match_id = response_matches['data'][0]['relationships']['matches']['data'][0]['id']
-    # response_game_data = make_api_call('match', match_id)
-    # filter_game_data(response_game_data)
+    try:
+        match_id = response_matches['data'][0]['relationships']['matches']['data'][0]['id']
+        response_game_data = make_api_call('match', match_id)
+        filter_game_data(response_game_data)
+        print(response_matches)
+    except IndexError:
+        print("No matches within the last 14 days")
 
 
 def respond_to_user():
