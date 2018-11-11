@@ -5,6 +5,7 @@ from practice_data import data
 from statistics import mean
 import json
 from datetime import datetime
+import csv
 
 player_stats_dict = {
     'assists': [],
@@ -21,7 +22,7 @@ player_stats_dict = {
 }
 
 personal_player_data = {
-    'gamertag': 'ehhhdrienne'
+    'gamertag': 'Bambo007'
 }
 
 game_data_dict = {}
@@ -42,6 +43,24 @@ header = {
 }
 
 
+def to_csv(input_dict):
+    with open('pubg_stats.csv', mode='w') as csv_file:
+        fieldnames = ['kills', 'headshots', 'name']
+        writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+
+        player_list = input_dict['included']
+        for i in range(len(player_list)):
+            if player_list[i]['type'] == 'participant':
+                stats = player_list[i]['attributes']['stats']
+                writer.writerow(
+                    {
+                        'kills': stats['kills'],
+                        'headshots': stats['headshotKills'],
+                        'name': stats['name']
+                    }
+                )
+
+
 def make_api_call(type, data):
     """Function to make api call and return response dictionary."""
     if type == 'gamertag':
@@ -50,22 +69,15 @@ def make_api_call(type, data):
         url = "https://api.pubg.com/shards/xbox-na/matches/{}".format(data)
     r = requests.get(url, headers=header)
     response_dict = r.json()
-    print(r.status_code)
     return response_dict
 
 
 def get_player_match_id():
     """Function to get user gamertag and call make_api_call()."""
-    gamertag = input('Please enter your gamertag: ')
-    personal_player_data['gamertag'] = gamertag
-    response_matches = make_api_call('gamertag', gamertag)
-    try:
-        match_id = response_matches['data'][0]['relationships']['matches']['data'][0]['id']
-        response_game_data = make_api_call('match', match_id)
-        filter_game_data(response_game_data)
-        print(response_matches)
-    except IndexError:
-        print("No matches within the last 14 days")
+    url = "https://api.pubg.com/shards/xbox/matches/2035e7be-0781-4e04-8e39-dd3db0f2823c"
+    r = requests.get(url, headers=header)
+    response_dict = r.json()
+    print(response_dict)
 
 
 def respond_to_user():
@@ -210,5 +222,5 @@ def seconds_to_minutes(seconds):
         minutes[1] = int(minutes[1]) - 60
     return '{} minutes and {} seconds'.format(minutes[0], minutes[1])
 
-if __name__ == "__main__":
-    get_player_match_id()
+# if __name__ == "__main__":
+#     get_player_match_id()
