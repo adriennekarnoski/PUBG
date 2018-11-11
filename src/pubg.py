@@ -6,6 +6,7 @@ from statistics import mean
 import json
 from datetime import datetime
 import csv
+import pandas
 
 player_stats_dict = {
     'assists': [],
@@ -22,7 +23,7 @@ player_stats_dict = {
 }
 
 personal_player_data = {
-    'gamertag': 'Bambo007'
+    'gamertag': 'ehhhdrienne'
 }
 
 game_data_dict = {}
@@ -74,10 +75,16 @@ def make_api_call(type, data):
 
 def get_player_match_id():
     """Function to get user gamertag and call make_api_call()."""
-    url = "https://api.pubg.com/shards/xbox/matches/2035e7be-0781-4e04-8e39-dd3db0f2823c"
-    r = requests.get(url, headers=header)
-    response_dict = r.json()
-    print(response_dict)
+    gamertag = input('Please enter your gamertag: ')
+    personal_player_data['gamertag'] = gamertag
+    response_matches = make_api_call('gamertag', gamertag)
+    try:
+        match_id = response_matches['data'][0]['relationships']['matches']['data'][0]['id']
+        response_game_data = make_api_call('match', match_id)
+        filter_game_data(response_game_data)
+        print(response_matches)
+    except IndexError:
+        print("No matches within the last 14 days")
 
 
 def respond_to_user():
@@ -172,24 +179,66 @@ def filter_game_data(input_dict):
 
 def filter_player_data(input_dict):
     """Function that takes in api response and filters out necessary data."""
-    count = 0
-    player_list = input_dict['included']
-    for i in range(len(player_list)):
-        if player_list[i]['type'] == 'participant':
-            stats = player_list[i]['attributes']['stats']
-            count += 1
-            player_stats_dict['assists'].append(stats['assists'])
-            player_stats_dict['damage'].append(stats['damageDealt'])
-            player_stats_dict['death'].append(stats['deathType'])
-            player_stats_dict['headshots'].append(stats['headshotKills'])
-            player_stats_dict['win_place'].append(stats['winPlace'])
-            player_stats_dict['win_points'].append(stats['winPoints'])
-            player_stats_dict['kills'].append(stats['kills'])
-            player_stats_dict['longest_kill'].append(stats['longestKill'])
-            player_stats_dict['time_survived'].append(stats['timeSurvived'])
-            player_stats_dict['weapons'].append(stats['weaponsAcquired'])
-            player_stats_dict['name'].append(stats['name'])
-    get_player_stats(player_stats_dict)
+    with open('pubg_stats.csv', mode='w') as csv_file:
+        fieldnames = [
+            'assists',
+            'damage',
+            'death',
+            'headshots',
+            'win_place',
+            'win_points',
+            'kills',
+            'longest_kill',
+            'time_survived',
+            'weapons',
+            'name'
+        ]
+        writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+        writer.writeheader()
+        player_list = input_dict['included']
+        for i in range(len(player_list)):
+            if player_list[i]['type'] == 'participant':
+                stats = player_list[i]['attributes']['stats']
+                writer.writerow(
+                    {
+                        'assists': stats['assists'],
+                        'damage': stats['damageDealt'],
+                        'death': stats['deathType'],
+                        'headshots': stats['headshotKills'],
+                        'win_place': stats['winPlace'],
+                        'win_points': stats['winPoints'],
+                        'kills': stats['kills'],
+                        'longest_kill': stats['longestKill'],
+                        'time_survived': stats['timeSurvived'],
+                        'weapons': stats['weaponsAcquired'],
+                        'name': stats['name']
+                    }
+                )
+
+    # count = 0
+    # player_list = input_dict['included']
+    # for i in range(len(player_list)):
+    #     if player_list[i]['type'] == 'participant':
+    #         stats = player_list[i]['attributes']['stats']
+    #         count += 1
+    #         player_stats_dict['assists'].append(stats['assists'])
+    #         player_stats_dict['damage'].append(stats['damageDealt'])
+    #         player_stats_dict['death'].append(stats['deathType'])
+    #         player_stats_dict['headshots'].append(stats['headshotKills'])
+    #         player_stats_dict['win_place'].append(stats['winPlace'])
+    #         player_stats_dict['win_points'].append(stats['winPoints'])
+    #         player_stats_dict['kills'].append(stats['kills'])
+    #         player_stats_dict['longest_kill'].append(stats['longestKill'])
+    #         player_stats_dict['time_survived'].append(stats['timeSurvived'])
+    #         player_stats_dict['weapons'].append(stats['weaponsAcquired'])
+    #         player_stats_dict['name'].append(stats['name'])
+    # get_player_stats(player_stats_dict)
+
+
+def print_data():
+    """."""
+    df = pandas.read_csv('pubg_stats.csv')
+    print(df)
 
 
 def get_player_stats(input_dict):
