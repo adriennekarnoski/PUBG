@@ -26,7 +26,9 @@ personal_player_data = {
     'gamertag': 'ehhhdrienne'
 }
 
-game_data_dict = {}
+game_data_dict = {
+    'gamertag': 'ehhhdrienne'
+}
 
 # Use to get a random list of matches
 # url = "https://api.pubg.com/shards/xbox-na/samples"
@@ -44,24 +46,6 @@ header = {
 }
 
 
-def to_csv(input_dict):
-    with open('pubg_stats.csv', mode='w') as csv_file:
-        fieldnames = ['kills', 'headshots', 'name']
-        writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
-
-        player_list = input_dict['included']
-        for i in range(len(player_list)):
-            if player_list[i]['type'] == 'participant':
-                stats = player_list[i]['attributes']['stats']
-                writer.writerow(
-                    {
-                        'kills': stats['kills'],
-                        'headshots': stats['headshotKills'],
-                        'name': stats['name']
-                    }
-                )
-
-
 def make_api_call(type, data):
     """Function to make api call and return response dictionary."""
     if type == 'gamertag':
@@ -74,9 +58,9 @@ def make_api_call(type, data):
 
 
 def get_player_match_id():
-    """Function to get user gamertag and call make_api_call()."""
+    """Function to get user gamertag and call make api call to retun match ids."""
     gamertag = input('Please enter your gamertag: ')
-    personal_player_data['gamertag'] = gamertag
+    game_data_dict['gamertag'] = gamertag
     response_matches = make_api_call('gamertag', gamertag)
     try:
         match_id = response_matches['data'][0]['relationships']['matches']['data'][0]['id']
@@ -87,44 +71,38 @@ def get_player_match_id():
         print("No matches within the last 14 days")
 
 
-def respond_to_user():
-    """Return all information to the user."""
+def print_game_data():
+    """Return game data to the user."""
     response = """
         {}'s Last Match
 
         Game Duration: {}
         Date: {}
-        Map: {}
+        Map: {}""".format(
+            game_data_dict['gamertag'],
+            seconds_to_minutes(game_data_dict['duration']),
+            game_data_dict['map']
+            )
+    print(response)
 
+
+def print_player_data(input_list):
+    """Return all information to the user."""
+    response = """
 
         PERSONAL STATS
 
-        Win Place: {}
-        Win Points: {}
-        Death By: {}
-        Time Survived: {}
+        Win Place: {0[4]}
+        Win Points: {0[5]}
+        Death By: {0[2]}
+        Time Survived: {0[8]}
 
-        Kills: {}
-        Assists: {}
-        Damage Dealt: {}
-        Headshots: {}
-        Longest Kill: {} meters
-        Weapons Acquired: {}""".format(
-        personal_player_data['gamertag'],
-        game_data_dict['duration'],
-        game_data_dict['date'],
-        game_data_dict['map'],
-        personal_player_data['win_place'],
-        personal_player_data['win_points'],
-        personal_player_data['death'],
-        personal_player_data['time_survived'],
-        personal_player_data['kills'],
-        personal_player_data['assists'],
-        personal_player_data['damage'],
-        personal_player_data['headshots'],
-        personal_player_data['longest_kill'],
-        personal_player_data['weapons']
-    )
+        Kills: {0[6]}
+        Assists: {0[0]}
+        Damage Dealt: {0[1]}
+        Headshots: {0[3]}
+        Longest Kill: {0[7]} meters
+        Weapons Acquired: {0[9]}""".format(input_list)
     print(response)
     other_players()
 
@@ -235,10 +213,23 @@ def filter_player_data(input_dict):
     # get_player_stats(player_stats_dict)
 
 
-def print_data():
-    """."""
+def get_player_data():
+    """Get the row of the pandas dataframe that has the user data."""
     df = pandas.read_csv('pubg_stats.csv')
-    print(df)
+    df_row = df.loc[df['name'] == game_data_dict['gamertag']].values.tolist()
+    edit_player_data(df_row[0])
+    # return df_row
+
+
+def edit_player_data(input_list):
+    """Edit player values before returning to the user."""
+    input_list[8] = seconds_to_minutes(input_list[8])
+    input_list[7] = "{0:.2f}".format(input_list[7])
+    if input_list[2] == 'byplayer':
+        input_list[2] = 'Player'
+    else:
+        input_list[2] = input_list[2].title()
+    print(input_list)
 
 
 def get_player_stats(input_dict):
