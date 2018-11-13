@@ -22,12 +22,10 @@ player_stats_dict = {
     'name': []
 }
 
-personal_player_data = {
-    'gamertag': 'ehhhdrienne'
-}
+personal_player_data = {}
 
 game_data_dict = {
-    'gamertag': 'ehhhdrienne'
+    'gamertag': 'example'
 }
 
 # Use to get a random list of matches
@@ -282,5 +280,5 @@ def seconds_to_minutes(seconds):
         minutes[1] = int(minutes[1]) - 60
     return '{} minutes and {} seconds'.format(minutes[0], minutes[1])
 
-# if __name__ == "__main__":
-#     get_player_match_id()
+if __name__ == "__main__":
+    get_player_match_id()
