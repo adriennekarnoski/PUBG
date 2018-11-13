@@ -72,7 +72,7 @@ def get_player_match_id():
 
 
 def print_game_data():
-    """Return game data to the user."""
+    """Function to print game data."""
     response = """
         {}'s Last Match
 
@@ -80,14 +80,15 @@ def print_game_data():
         Date: {}
         Map: {}""".format(
             game_data_dict['gamertag'],
-            seconds_to_minutes(game_data_dict['duration']),
+            game_data_dict['duration'],
+            game_data_dict['date'],
             game_data_dict['map']
             )
     print(response)
 
 
 def print_player_data(input_list):
-    """Return all information to the user."""
+    """Function to print the user's personal data."""
     response = """
 
         PERSONAL STATS
@@ -104,35 +105,22 @@ def print_player_data(input_list):
         Longest Kill: {0[7]} meters
         Weapons Acquired: {0[9]}""".format(input_list)
     print(response)
-    other_players()
 
 
-def other_players():
-    """Information on other players in the game."""
-    average_kills = round(mean(player_stats_dict['kills']))
-    average_headshots = round(mean(player_stats_dict['headshots']))
-    average_time_survived = seconds_to_minutes(mean(player_stats_dict['time_survived']))
-    longest_kill_rounded = "{0:.2f}".format(max(player_stats_dict['longest_kill']))
+def print_other_players_data(input_list):
+    """Function to print the other player's data."""
     response = """
 
         OVERALL STATS
 
-        Average Kills: {}
-        Average Headshots: {}
-        Average Survival Time: {}
+        Average Kills: {0[0]}
+        Average Headshots: {0[1]}
+        Average Survival Time: {0[2]}
 
-        Most Kills: {}
-        Most Headshots: {}
-        Highest Damage: {}
-        Longest Kill: {} meters """.format(
-            average_kills,
-            average_headshots,
-            average_time_survived,
-            max(player_stats_dict['kills']),
-            max(player_stats_dict['headshots']),
-            max(player_stats_dict['damage']),
-            longest_kill_rounded
-        )
+        Most Kills: {0[3]}
+        Most Headshots: {0[4]}
+        Highest Damage: {0[5]}
+        Longest Kill: {0[6]} meters """.format(input_list)
     print(response)
 
 
@@ -213,44 +201,76 @@ def filter_player_data(input_dict):
     # get_player_stats(player_stats_dict)
 
 
-def get_player_data():
-    """Get the row of the pandas dataframe that has the user data."""
+# def get_player_data():
+#     """Get the row of the pandas dataframe that has the user data."""
+#     df = pandas.read_csv('pubg_stats.csv')
+#     df_row = df.loc[df['name'] == game_data_dict['gamertag']].values.tolist()
+#     edit_player_data(df_row[0])
+
+
+def get_dataframe_data():
+    """Create a pandas dataframe and get desired values."""
+    get_average = ['kills', 'headshots', 'time_survived']
+    get_max = ['kills', 'headshots', 'damage', 'longest_kill']
+    overall_data_list = []
     df = pandas.read_csv('pubg_stats.csv')
-    df_row = df.loc[df['name'] == game_data_dict['gamertag']].values.tolist()
-    edit_player_data(df_row[0])
-    # return df_row
+    df_player_row = df.loc[df['name'] == game_data_dict['gamertag']].values.tolist()
+    for i in range(len(get_average)):
+        overall_data_list.append(df[get_average[i]].mean())
+    for i in range(len(get_max)):
+        overall_data_list.append(df[get_max[i]].max())
+    player_data = edit_player_data(df_player_row[0])
+    overall_data = edit_overall_game_data(overall_data_list)
+    print_game_data()
+    print_player_data(player_data)
+    print_other_players_data(overall_data)
 
 
 def edit_player_data(input_list):
-    """Edit player values before returning to the user."""
+    """Edit player values for easier reading before returning to the user."""
     input_list[8] = seconds_to_minutes(input_list[8])
     input_list[7] = "{0:.2f}".format(input_list[7])
     if input_list[2] == 'byplayer':
         input_list[2] = 'Player'
     else:
         input_list[2] = input_list[2].title()
-    print(input_list)
+    return input_list
 
 
-def get_player_stats(input_dict):
-    """Print the average of dictionary values."""
-    player_index = input_dict['name'].index(personal_player_data['gamertag'])
-    for k, v in input_dict.items():
-        personal_player_data[k] = v[player_index]
-    edit_player_dict_values(personal_player_data)
+def edit_overall_game_data(input_list):
+    """Edit format of overall average game data."""
+    input_list[0] = int(round(input_list[0]))
+    input_list[1] = int(round(input_list[1]))
+    input_list[2] = seconds_to_minutes(input_list[2])
+    input_list[6] = "{0:.2f}".format(input_list[6])
+    return input_list
 
 
-def edit_player_dict_values(input):
-    """Change the layout of various values in player dictionary."""
-    if personal_player_data['death'] is 'byplayer':
-        personal_player_data['death'] = 'Player'
-    else:
-        personal_player_data['death'] = personal_player_data['death'].title()
-    player_survived = personal_player_data['time_survived']
-    personal_player_data['time_survived'] = seconds_to_minutes(player_survived)
-    longest_kill = personal_player_data['longest_kill']
-    personal_player_data['longest_kill'] = "{0:.2f}".format(longest_kill)
-    respond_to_user()
+# def get_player_stats(input_dict):
+#     """Print the average of dictionary values."""
+#     player_index = input_dict['name'].index(personal_player_data['gamertag'])
+#     for k, v in input_dict.items():
+#         personal_player_data[k] = v[player_index]
+#     edit_player_dict_values(personal_player_data)
+
+
+# def edit_player_dict_values(input):
+#     """Change the layout of various values in player dictionary."""
+#     if personal_player_data['death'] is 'byplayer':
+#         personal_player_data['death'] = 'Player'
+#     else:
+#         personal_player_data['death'] = personal_player_data['death'].title()
+#     player_survived = personal_player_data['time_survived']
+#     personal_player_data['time_survived'] = seconds_to_minutes(player_survived)
+#     longest_kill = personal_player_data['longest_kill']
+#     personal_player_data['longest_kill'] = "{0:.2f}".format(longest_kill)
+#     respond_to_user()
+
+def return_to_user(player_data, overall_data):
+    """Function to ."""
+    print_game_data()
+    print_player_data(player_data)
+    print_other_players_data(overall_data)
 
 
 def seconds_to_minutes(seconds):
