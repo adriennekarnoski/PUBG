@@ -28,13 +28,6 @@ game_data_dict = {
     'gamertag': 'example'
 }
 
-# Use to get a random list of matches
-# url = "https://api.pubg.com/shards/xbox-na/samples"
-
-# Use to get information about a specific match
-# url = "https://api.pubg.com/shards/xbox-na/matches/17d001b7-bddb-489c-8001-d7228578128f"
-
-# url = 'https://api.playbattlegrounds.com/shards/xbox-na/players/account.a831af1196724930be51689635846ba2'
 
 api_key = os.environ.get('API_KEY')
 
@@ -64,7 +57,6 @@ def get_player_match_id():
         match_id = response_matches['data'][0]['relationships']['matches']['data'][0]['id']
         response_game_data = make_api_call('match', match_id)
         filter_game_data(response_game_data)
-        print(response_matches)
     except IndexError:
         print("No matches within the last 14 days")
 
@@ -178,32 +170,7 @@ def filter_player_data(input_dict):
                         'name': stats['name']
                     }
                 )
-
-    # count = 0
-    # player_list = input_dict['included']
-    # for i in range(len(player_list)):
-    #     if player_list[i]['type'] == 'participant':
-    #         stats = player_list[i]['attributes']['stats']
-    #         count += 1
-    #         player_stats_dict['assists'].append(stats['assists'])
-    #         player_stats_dict['damage'].append(stats['damageDealt'])
-    #         player_stats_dict['death'].append(stats['deathType'])
-    #         player_stats_dict['headshots'].append(stats['headshotKills'])
-    #         player_stats_dict['win_place'].append(stats['winPlace'])
-    #         player_stats_dict['win_points'].append(stats['winPoints'])
-    #         player_stats_dict['kills'].append(stats['kills'])
-    #         player_stats_dict['longest_kill'].append(stats['longestKill'])
-    #         player_stats_dict['time_survived'].append(stats['timeSurvived'])
-    #         player_stats_dict['weapons'].append(stats['weaponsAcquired'])
-    #         player_stats_dict['name'].append(stats['name'])
-    # get_player_stats(player_stats_dict)
-
-
-# def get_player_data():
-#     """Get the row of the pandas dataframe that has the user data."""
-#     df = pandas.read_csv('pubg_stats.csv')
-#     df_row = df.loc[df['name'] == game_data_dict['gamertag']].values.tolist()
-#     edit_player_data(df_row[0])
+    get_dataframe_data()
 
 
 def get_dataframe_data():
@@ -226,6 +193,7 @@ def get_dataframe_data():
 
 def edit_player_data(input_list):
     """Edit player values for easier reading before returning to the user."""
+    input_list[1] = "{0:.2f}".format(input_list[1])
     input_list[8] = seconds_to_minutes(input_list[8])
     input_list[7] = "{0:.2f}".format(input_list[7])
     if input_list[2] == 'byplayer':
@@ -240,29 +208,10 @@ def edit_overall_game_data(input_list):
     input_list[0] = int(round(input_list[0]))
     input_list[1] = int(round(input_list[1]))
     input_list[2] = seconds_to_minutes(input_list[2])
+    input_list[5] = "{0:.2f}".format(input_list[5])
     input_list[6] = "{0:.2f}".format(input_list[6])
     return input_list
 
-
-# def get_player_stats(input_dict):
-#     """Print the average of dictionary values."""
-#     player_index = input_dict['name'].index(personal_player_data['gamertag'])
-#     for k, v in input_dict.items():
-#         personal_player_data[k] = v[player_index]
-#     edit_player_dict_values(personal_player_data)
-
-
-# def edit_player_dict_values(input):
-#     """Change the layout of various values in player dictionary."""
-#     if personal_player_data['death'] is 'byplayer':
-#         personal_player_data['death'] = 'Player'
-#     else:
-#         personal_player_data['death'] = personal_player_data['death'].title()
-#     player_survived = personal_player_data['time_survived']
-#     personal_player_data['time_survived'] = seconds_to_minutes(player_survived)
-#     longest_kill = personal_player_data['longest_kill']
-#     personal_player_data['longest_kill'] = "{0:.2f}".format(longest_kill)
-#     respond_to_user()
 
 def return_to_user(player_data, overall_data):
     """Function to ."""
