@@ -10,7 +10,6 @@ import csv
 import pandas
 from terminaltables import SingleTable
 
-table_data = []
 
 gamertag = 'example'
 
@@ -28,9 +27,7 @@ player_stats_dict = {
     'name': []
 }
 
-game_data_dict = {
-    'gamertag': 'example'
-}
+game_data_dict = {}
 
 api_key = os.environ.get('API_KEY')
 
@@ -52,22 +49,16 @@ def make_api_call(type, data):
 
 
 def get_player_match_id():
-    """Function to get user gamertag and call make api call to retun match ids."""
-    gamertag = input('Please enter your gamertag: ')
-    game_data_dict['gamertag'] = gamertag
+    """Function taking user gamertag to make api call to retun match ids."""
+    user_gamertag = input('Please enter your gamertag: ')
+    gamertag = user_gamertag
     response_matches = make_api_call('gamertag', gamertag)
     try:
         match_id = response_matches['data'][0]['relationships']['matches']['data'][0]['id']
         response_game_data = make_api_call('match', match_id)
-        # filter_game_data(response_game_data)
-        save_to_file(response_game_data)
+        filter_game_data(response_game_data)
     except IndexError:
         print("No matches within the last 14 days")
-
-
-# def save_to_file(input_data):
-#     with open('data.py', 'w') as outfile:
-#         json.dump(input_data, outfile)
 
 
 def print_game_data():
@@ -78,48 +69,11 @@ def print_game_data():
         Game Duration: {}
         Date: {}
         Map: {}""".format(
-            game_data_dict['gamertag'],
+            gamertag,
             game_data_dict['duration'],
             game_data_dict['date'],
             game_data_dict['map']
             )
-    print(response)
-
-
-def print_player_data(input_list):
-    """Function to print the user's personal data."""
-    response = """
-
-        PERSONAL STATS
-
-        Win Place: {0[4]}
-        Win Points: {0[5]}
-        Death By: {0[2]}
-        Time Survived: {0[8]}
-
-        Kills: {0[6]}
-        Assists: {0[0]}
-        Damage Dealt: {0[1]}
-        Headshots: {0[3]}
-        Longest Kill: {0[7]} meters
-        Weapons Acquired: {0[9]}""".format(input_list)
-    print(response)
-
-
-def print_other_players_data(input_list):
-    """Function to print the other player's data."""
-    response = """
-
-        OVERALL STATS
-
-        Average Kills: {0[0]}
-        Average Headshots: {0[1]}
-        Average Survival Time: {0[2]}
-
-        Most Kills: {0[3]}
-        Most Headshots: {0[4]}
-        Highest Damage: {0[5]}
-        Longest Kill: {0[6]} meters """.format(input_list)
     print(response)
 
 
@@ -135,65 +89,12 @@ def filter_game_data(input_dict):
         game_data_dict['map'] = 'Sanhok'
     map_name = game['mapName'].split('_')
     game_data_dict['map'] = map_name[0]
-    filter_player_data(input_dict)
-
-
-# def filter_player_data(input_dict):
-#     """Function that takes in api response and filters out necessary data."""
-#     with open('pubg_stats.csv', mode='w') as csv_file:
-#         fieldnames = [
-#             'DBNOs',
-#             'assists',
-#             'boosts',
-#             'damage',
-#             'death',
-#             'headshots',
-#             'heals',
-#             'win_place',
-#             'win_points',
-#             'kills',
-#             'revives',
-#             'ride_distance',
-#             'swim_distance',
-#             'walk_distance',
-#             'longest_kill',
-#             'time_survived',
-#             'weapons',
-#             'name'
-#         ]
-#         writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
-#         writer.writeheader()
-#         player_list = input_dict['included']
-#         for i in range(len(player_list)):
-#             if player_list[i]['type'] == 'participant':
-#                 stats = player_list[i]['attributes']['stats']
-#                 writer.writerow(
-#                     {
-#                         'DBNOs': stats['DBNOs'],
-#                         'assists': stats['assists'],
-#                         'boosts': stats['boosts'],
-#                         'damage': stats['damageDealt'],
-#                         'death': stats['deathType'],
-#                         'headshots': stats['headshotKills'],
-#                         'heals': stats['heals'],
-#                         'win_place': stats['winPlace'],
-#                         'win_points': stats['winPoints'],
-#                         'kills': stats['kills'],
-#                         'revives': stats['revives'],
-#                         'ride_distance': stats['rideDistance'],
-#                         'swim_distance': stats['swimDistance'],
-#                         'walk_distance': stats['walkDistance'],
-#                         'longest_kill': stats['longestKill'],
-#                         'time_survived': stats['timeSurvived'],
-#                         'weapons': stats['weaponsAcquired'],
-#                         'name': stats['name']
-#                     }
-#                 )
-#     get_dataframe_data()
+    print_game_data()
+    create_dataframe(input_dict)
 
 
 def create_dataframe(input_dict):
-    """Function that takes in api response and filters out necessary data."""
+    """Function that takes in api response and creates a pandas dataframe."""
     d = {
         'kills': [],
         'headshotKills': [],
@@ -223,29 +124,11 @@ def create_dataframe(input_dict):
                 if key in d:
                     d[key].append(value)
     df = pandas.DataFrame(d)
-    print(df.shape)
     get_data_from_dataframe(df)
-    # return df
-
-
-# def get_dataframe_data():
-#     """Create a pandas dataframe and get desired values."""
-#     get_average = ['kills', 'headshots', 'time_survived']
-#     get_max = ['kills', 'headshots', 'damage', 'longest_kill']
-#     overall_data_list = []
-#     df = pandas.read_csv('pubg_stats.csv')
-#     df_player_row = df.loc[df['name'] == game_data_dict['gamertag']].values.tolist()
-#     for i in range(len(get_average)):
-#         overall_data_list.append(df[get_average[i]].mean())
-#     for i in range(len(get_max)):
-#         overall_data_list.append(df[get_max[i]].max())
-#     player_data = edit_player_data(df_player_row[0])
-#     overall_data = edit_overall_game_data(overall_data_list)
-#     return_to_user(player_data, overall_data)
 
 
 def get_data_from_dataframe(df):
-    """Create a pandas dataframe and get desired values."""
+    """Get all necessary data from dataframe."""
     player_data = df.loc[df['name'] == gamertag].values.tolist()[0]
     for i in range(len(player_data)):
         if player_data[i] == 0.0:
@@ -260,15 +143,6 @@ def get_data_from_dataframe(df):
     top_ten = create_average_list(top_ten_df)
     top_ten.pop(8)
     print_table(player_data, average_values, top_ten)
-    # df = pandas.read_csv('pubg_stats.csv')
-    # df_player_row = df.loc[df['name'] == game_data_dict['gamertag']].values.tolist()
-    # for i in range(len(get_average)):
-    #     overall_data_list.append(df[get_average[i]].mean())
-    # for i in range(len(get_max)):
-    #     overall_data_list.append(df[get_max[i]].max())
-    # player_data = edit_player_data(df_player_row[0])
-    # overall_data = edit_overall_game_data(overall_data_list)
-    # return_to_user(player_data, overall_data)
 
 
 def create_average_list(df):
@@ -284,7 +158,7 @@ def create_average_list(df):
 
 
 def print_table(player, overall, top_ten):
-    """."""
+    """Return all data to user in a table."""
     labels = [
         'Kills',
         'Headshot Kills',
@@ -304,6 +178,7 @@ def print_table(player, overall, top_ten):
         'Revives',
         'Weapons Acquired']
     data = [['', gamertag.upper(), 'OVERALL AVERAGE', 'TOP TEN AVERAGE']]
+    player_score = 0
     distance_list = [4, 8, 9, 10]
     for i in range(len(labels)):
         row = []
@@ -321,35 +196,6 @@ def print_table(player, overall, top_ten):
     print(table.table)
 
 
-def edit_player_data(input_list):
-    """Edit player values for easier reading before returning to the user."""
-    input_list[1] = "{0:.2f}".format(input_list[1])
-    input_list[8] = seconds_to_minutes(input_list[8])
-    input_list[7] = "{0:.2f}".format(input_list[7])
-    if input_list[2] == 'byplayer':
-        input_list[2] = 'Player'
-    else:
-        input_list[2] = input_list[2].title()
-    return input_list
-
-
-def edit_overall_game_data(input_list):
-    """Edit format of overall average game data."""
-    input_list[0] = int(round(input_list[0]))
-    input_list[1] = int(round(input_list[1]))
-    input_list[2] = seconds_to_minutes(input_list[2])
-    input_list[5] = "{0:.2f}".format(input_list[5])
-    input_list[6] = "{0:.2f}".format(input_list[6])
-    return input_list
-
-
-def return_to_user(player_data, overall_data):
-    """Function to ."""
-    print_game_data()
-    print_player_data(player_data)
-    print_other_players_data(overall_data)
-
-
 def seconds_to_minutes(seconds):
     """Function that takes seconds and converts to minutes."""
     seconds = "{0:.2f}".format(seconds / 60)
@@ -360,10 +206,25 @@ def seconds_to_minutes(seconds):
     return '{}:{}'.format(minutes[0], minutes[1])
 
 
-def helper_function():
-    """Function to run application without API call."""
-    game_data_dict['gamertag'] = 'example'
-    filter_game_data(data)
+def run_pubg():
+    """."""
+    opening_prompt = """
+        Please make a selection:
 
-# if __name__ == "__main__":
-#     helper_function()
+        [1] Get stats on your last PUBG game played (Requires XBOX gamertag)
+        [2] See an example using past data
+
+        Enter selection:
+    """
+    user_input = input(opening_prompt)
+    if user_input == '1':
+        get_player_match_id()
+    elif user_input == '2':
+        os.system('clear')
+        filter_game_data(data)
+    else:
+        print('OPTION NOT VALID')
+        user_input = input(opening_prompt)
+
+if __name__ == "__main__":
+    run_pubg()
