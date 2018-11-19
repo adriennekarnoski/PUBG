@@ -195,21 +195,23 @@ def filter_game_data(input_dict):
 def create_dataframe(input_dict):
     """Function that takes in api response and filters out necessary data."""
     d = {
-        'DBNOs': [],
-        'assists': [],
-        'boosts': [],
-        'damageDealt': [],
-        'headshotKills': [],
-        'heals': [],
-        'winPlace': [],
-        'winPoints': [],
         'kills': [],
-        'revives': [],
+        'headshotKills': [],
+        'assists': [],
+        'DBNOs': [],
+        'longestKill': [],
+        'killPlace': [],
+        'killPoints': [],
+        'damageDealt': [],
+        'winPlace': [],
+        'walkDistance': [],
         'rideDistance': [],
         'swimDistance': [],
-        'walkDistance': [],
-        'longestKill': [],
         'timeSurvived': [],
+        'winPoints': [],
+        'boosts': [],
+        'heals': [],
+        'revives': [],
         'weaponsAcquired': [],
         'name': []
     }
@@ -221,6 +223,7 @@ def create_dataframe(input_dict):
                 if key in d:
                     d[key].append(value)
     df = pandas.DataFrame(d)
+    print(df.shape)
     get_data_from_dataframe(df)
     # return df
 
@@ -250,10 +253,12 @@ def get_data_from_dataframe(df):
         if type(player_data[i]) is float:
             player_data[i] = "{0:.2f}".format(player_data[i])
     player_data.remove(gamertag)
-    df.drop(columns=['name'])
+    player_data.pop(8)
     average_values = create_average_list(df)
+    average_values.pop(8)
     top_ten_df = df.loc[df['winPlace'] <= 10]
     top_ten = create_average_list(top_ten_df)
+    top_ten.pop(8)
     print_table(player_data, average_values, top_ten)
     # df = pandas.read_csv('pubg_stats.csv')
     # df_player_row = df.loc[df['name'] == game_data_dict['gamertag']].values.tolist()
@@ -272,35 +277,48 @@ def create_average_list(df):
     for column in df:
         if df[column].dtype == 'int64':
             output_list.append(int(round(df[column].mean())))
+            # print(int(round(df[column].mean())))
         elif df[column].dtype == 'float64':
             average = df[column].mean()
             output_list.append("{0:.2f}".format(average))
+            # print("{0:.2f}".format(average))
     return output_list
 
 
 def print_table(player, overall, top_ten):
     """."""
     labels = [
-        'DBNOs',
-        'Assists',
-        'Boosts',
-        'Damage Dealt',
-        'Headshot Kills',
-        'Heals',
-        'Win Place',
-        'Win Points',
         'Kills',
-        'Revives',
+        'Headshot Kills',
+        'Assists',
+        'DBNOs',
+        'Longest Kill',
+        'Kill Place',
+        'Kill Points',
+        'Damage Dealt',
+        'Walk Distance',
         'Ride Distance',
         'Swim Distance',
-        'Walk Distance',
-        'Longest Kill',
         'Time Survived',
+        'Win Points',
+        'Boosts',
+        'Heals',
+        'Revives',
         'Weapons Acquired']
     data = [['', gamertag.upper(), 'OVERALL AVERAGE', 'TOP TEN AVERAGE']]
+    distance_list = [4, 8, 9, 10]
     for i in range(len(labels)):
         row = []
         row.append(labels[i])
+        # if i in distance_list:
+        #     row.append('{} Meters'.format(player[i]))
+        #     row.append('{} Meters'.format(overall[i]))
+        #     row.append('{} Meters'.format(top_ten[i]))
+        # if i == 11:
+        # row.append(seconds_to_minutes(player[i]))
+        # row.append(seconds_to_minutes(overall[i]))
+        # row.append(seconds_to_minutes(top_ten[i]))
+        # else:
         row.append(player[i])
         row.append(overall[i])
         row.append(top_ten[i])
