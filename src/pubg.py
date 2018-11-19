@@ -277,11 +277,9 @@ def create_average_list(df):
     for column in df:
         if df[column].dtype == 'int64':
             output_list.append(int(round(df[column].mean())))
-            # print(int(round(df[column].mean())))
         elif df[column].dtype == 'float64':
             average = df[column].mean()
             output_list.append("{0:.2f}".format(average))
-            # print("{0:.2f}".format(average))
     return output_list
 
 
@@ -310,18 +308,18 @@ def print_table(player, overall, top_ten):
     for i in range(len(labels)):
         row = []
         row.append(labels[i])
-        # if i in distance_list:
-        #     row.append('{} Meters'.format(player[i]))
-        #     row.append('{} Meters'.format(overall[i]))
-        #     row.append('{} Meters'.format(top_ten[i]))
-        # if i == 11:
-        # row.append(seconds_to_minutes(player[i]))
-        # row.append(seconds_to_minutes(overall[i]))
-        # row.append(seconds_to_minutes(top_ten[i]))
-        # else:
-        row.append(player[i])
-        row.append(overall[i])
-        row.append(top_ten[i])
+        if i in distance_list:
+            row.append('{} Meters'.format(player[i]))
+            row.append('{} Meters'.format(overall[i]))
+            row.append('{} Meters'.format(top_ten[i]))
+        if i == 11:
+            row.append(seconds_to_minutes(float(player[i])))
+            row.append(seconds_to_minutes(float(overall[i])))
+            row.append(seconds_to_minutes(float(top_ten[i])))
+        else:
+            row.append(player[i])
+            row.append(overall[i])
+            row.append(top_ten[i])
         data.append(row)
     table = SingleTable(data)
     print(table.table)
@@ -363,7 +361,7 @@ def seconds_to_minutes(seconds):
     if int(minutes[1]) >= 60:
         minutes[0] = int(minutes[0]) + 1
         minutes[1] = int(minutes[1]) - 60
-    return '{} minutes and {} seconds'.format(minutes[0], minutes[1])
+    return '{}.{} min'.format(minutes[0], minutes[1])
 
 
 def helper_function():
