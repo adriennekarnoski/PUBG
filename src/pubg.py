@@ -8,6 +8,7 @@ import json
 from datetime import datetime
 import csv
 import pandas
+from terminaltables import SingleTable
 
 table_data = []
 
@@ -253,7 +254,7 @@ def get_data_from_dataframe(df):
     average_values = create_average_list(df)
     top_ten_df = df.loc[df['winPlace'] <= 10]
     top_ten = create_average_list(top_ten_df)
-    print_dataframe(player_data, average_values, top_ten)
+    print_table(player_data, average_values, top_ten)
     # df = pandas.read_csv('pubg_stats.csv')
     # df_player_row = df.loc[df['name'] == game_data_dict['gamertag']].values.tolist()
     # for i in range(len(get_average)):
@@ -277,15 +278,36 @@ def create_average_list(df):
     return output_list
 
 
-def print_dataframe(player, overall, top_ten):
+def print_table(player, overall, top_ten):
     """."""
-    output_df = pandas.DataFrame.from_dict(
-        dict([
-            (gamertag, player),
-            ('All Players', overall),
-            ('Top 10', top_ten),
-        ]))
-    print(output_df)
+    labels = [
+        'DBNOs',
+        'Assists',
+        'Boosts',
+        'Damage Dealt',
+        'Headshot Kills',
+        'Heals',
+        'Win Place',
+        'Win Points',
+        'Kills',
+        'Revives',
+        'Ride Distance',
+        'Swim Distance',
+        'Walk Distance',
+        'Longest Kill',
+        'Time Survived',
+        'Weapons Acquired']
+    data = [['', gamertag.upper(), 'OVERALL AVERAGE', 'TOP TEN AVERAGE']]
+    for i in range(len(labels)):
+        row = []
+        row.append(labels[i])
+        row.append(player[i])
+        row.append(overall[i])
+        row.append(top_ten[i])
+        data.append(row)
+    table = SingleTable(data)
+    print(table.table)
+
 
 def edit_player_data(input_list):
     """Edit player values for easier reading before returning to the user."""
