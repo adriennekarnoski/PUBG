@@ -290,13 +290,13 @@ def print_table(player, overall, top_ten):
         'Headshot Kills',
         'Assists',
         'DBNOs',
-        'Longest Kill',
+        'Longest Kill (m)',
         'Kill Place',
         'Kill Points',
         'Damage Dealt',
-        'Walk Distance',
-        'Ride Distance',
-        'Swim Distance',
+        'Walk Distance (m)',
+        'Ride Distance (m)',
+        'Swim Distance (m)',
         'Time Survived',
         'Win Points',
         'Boosts',
@@ -308,10 +308,6 @@ def print_table(player, overall, top_ten):
     for i in range(len(labels)):
         row = []
         row.append(labels[i])
-        if i in distance_list:
-            row.append('{} Meters'.format(player[i]))
-            row.append('{} Meters'.format(overall[i]))
-            row.append('{} Meters'.format(top_ten[i]))
         if i == 11:
             row.append(seconds_to_minutes(float(player[i])))
             row.append(seconds_to_minutes(float(overall[i])))
@@ -361,7 +357,7 @@ def seconds_to_minutes(seconds):
     if int(minutes[1]) >= 60:
         minutes[0] = int(minutes[0]) + 1
         minutes[1] = int(minutes[1]) - 60
-    return '{}.{} min'.format(minutes[0], minutes[1])
+    return '{}:{}'.format(minutes[0], minutes[1])
 
 
 def helper_function():
