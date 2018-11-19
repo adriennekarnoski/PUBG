@@ -6,7 +6,7 @@ setup(
     author="Adrienne Karnoski",
     author_email="adrienne.j.karnoski@gmail.com",
     license='MIT',
-    py_modules=['pubg, inactive_api_pubg, practice_data'],
+    py_modules=['pubg, inactive_api_pubg, mock_api_response'],
     package_dir={'': 'src'},
     install_requires=[],
     extras_require={'test': ['pytest', 'pytest-watch']},
