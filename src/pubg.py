@@ -27,7 +27,6 @@ player_stats_dict = {
     'name': []
 }
 
-game_data_dict = {}
 
 api_key = os.environ.get('API_KEY')
 
@@ -58,10 +57,10 @@ def get_player_match_id():
         response_game_data = make_api_call('match', match_id)
         filter_game_data(response_game_data)
     except IndexError:
-        print("No matches within the last 14 days")
+        print("No matches for {} within the last 14 days".format(gamertag))
 
 
-def print_game_data():
+def print_game_data(game_data_dict):
     """Function to print game data."""
     response = """
         {}'s Last Match
@@ -79,6 +78,7 @@ def print_game_data():
 
 def filter_game_data(input_dict):
     """Filter out information about the game."""
+    game_data_dict = {}
     game = input_dict['data']['attributes']
     time = datetime.strptime(game['createdAt'], "%Y-%m-%dT%H:%M:%SZ")
     game_data_dict['date'] = time.strftime('%a, %b %d')
@@ -89,7 +89,7 @@ def filter_game_data(input_dict):
         game_data_dict['map'] = 'Sanhok'
     map_name = game['mapName'].split('_')
     game_data_dict['map'] = map_name[0]
-    print_game_data()
+    print_game_data(game_data_dict)
     create_dataframe(input_dict)
 
 
@@ -219,12 +219,13 @@ def run_pubg():
     user_input = input(opening_prompt)
     if user_input == '1':
         get_player_match_id()
-    elif user_input == '2':
+    if user_input == '2':
         os.system('clear')
         filter_game_data(data)
     else:
+        os.system('clear')
         print('OPTION NOT VALID')
-        user_input = input(opening_prompt)
+        run_pubg()
 
 if __name__ == "__main__":
     run_pubg()
