@@ -11,7 +11,24 @@ import pandas
 from terminaltables import SingleTable
 
 
-gamertag = 'example'
+class User(object):
+    """Class for user to store data."""
+
+    def __init__(self, gamertag, win_place=None):
+        """Initialize a User class."""
+        self.gamertag = gamertag
+        self.win_place = win_place
+
+
+class GameData(object):
+    """Class for storing game data."""
+
+    def __init__(self):
+        """Initialize a GameData class."""
+        self.duration = None
+        self.data = None
+        self.map = None
+
 
 player_stats_dict = {
     'assists': [],
@@ -49,18 +66,18 @@ def make_api_call(type, data):
 
 def get_player_match_id():
     """Function taking user gamertag to make api call to retun match ids."""
-    user_gamertag = input('Please enter your gamertag: ')
-    gamertag = user_gamertag
+    gamertag = input('Please enter your gamertag: ')
+    user = User(gamertag)
     response_matches = make_api_call('gamertag', gamertag)
     try:
         match_id = response_matches['data'][0]['relationships']['matches']['data'][0]['id']
         response_game_data = make_api_call('match', match_id)
-        filter_game_data(response_game_data)
+        filter_game_data(response_game_data, user)
     except IndexError:
         print("No matches for {} within the last 14 days".format(gamertag))
 
 
-def print_game_data(game_data_dict):
+def print_game_data(user, game_data):
     """Function to print game data."""
     response = """
         {}'s Last Match
@@ -68,32 +85,32 @@ def print_game_data(game_data_dict):
         Game Duration: {}
         Date: {}
         Map: {}""".format(
-            gamertag,
-            game_data_dict['duration'],
-            game_data_dict['date'],
-            game_data_dict['map']
+            user.gamertag,
+            game_data.duration,
+            game_data.date,
+            game_data.map
             )
     print(response)
 
 
-def filter_game_data(input_dict):
+def filter_game_data(input_dict, user):
     """Filter out information about the game."""
-    game_data_dict = {}
+    game_data = GameData()
     game = input_dict['data']['attributes']
     time = datetime.strptime(game['createdAt'], "%Y-%m-%dT%H:%M:%SZ")
-    game_data_dict['date'] = time.strftime('%a, %b %d')
-    game_data_dict['duration'] = seconds_to_minutes(game['duration'])
+    game_data.date = time.strftime('%a, %b %d')
+    game_data.duration = seconds_to_minutes(game['duration'])
     if game['mapName'] == 'Desert_Main':
-        game_data_dict['map'] = 'Miramar'
+        game_data.map = 'Miramar'
     if game['mapName'] == 'Savage_Main':
-        game_data_dict['map'] = 'Sanhok'
+        game_data.map = 'Sanhok'
     map_name = game['mapName'].split('_')
-    game_data_dict['map'] = map_name[0]
-    print_game_data(game_data_dict)
-    create_dataframe(input_dict)
+    game_data.map = map_name[0]
+    print_game_data(user, game_data)
+    create_dataframe(input_dict, user)
 
 
-def create_dataframe(input_dict):
+def create_dataframe(input_dict, user):
     """Function that takes in api response and creates a pandas dataframe."""
     d = {
         'kills': [],
@@ -124,18 +141,19 @@ def create_dataframe(input_dict):
                 if key in d:
                     d[key].append(value)
     df = pandas.DataFrame(d)
-    get_data_from_dataframe(df)
+    get_data_from_dataframe(df, user)
 
 
-def get_data_from_dataframe(df):
+def get_data_from_dataframe(df, user):
     """Get all necessary data from dataframe."""
-    player_data = df.loc[df['name'] == gamertag].values.tolist()[0]
+    player_data = df.loc[df['name'] == user.gamertag].values.tolist()[0]
+    user.win_place = player_data[8]
     for i in range(len(player_data)):
         if player_data[i] == 0.0:
             player_data[i] = 0
         if type(player_data[i]) is float:
             player_data[i] = "{0:.2f}".format(player_data[i])
-    player_data.remove(gamertag)
+    player_data.remove(user.gamertag)
     player_data.pop(8)
     average_values = create_average_list(df)
     average_values.pop(8)
@@ -177,9 +195,8 @@ def print_table(player, overall, top_ten):
         'Heals',
         'Revives',
         'Weapons Acquired']
-    data = [['', gamertag.upper(), 'OVERALL AVERAGE', 'TOP TEN AVERAGE']]
+    data = [['', 'PERSONAL STATS', 'OVERALL AVERAGE', 'TOP TEN AVERAGE']]
     player_score = 0
-    distance_list = [4, 8, 9, 10]
     for i in range(len(labels)):
         row = []
         row.append(labels[i])
@@ -208,6 +225,7 @@ def seconds_to_minutes(seconds):
 
 def run_pubg():
     """."""
+    os.system('clear')
     opening_prompt = """
         Please make a selection:
 
@@ -219,11 +237,11 @@ def run_pubg():
     user_input = input(opening_prompt)
     if user_input == '1':
         get_player_match_id()
-    if user_input == '2':
-        os.system('clear')
-        filter_game_data(data)
+    elif user_input == '2':
+        user = User('example')
+        gamertag = 'example'
+        filter_game_data(data, user)
     else:
-        os.system('clear')
         print('OPTION NOT VALID')
         run_pubg()
 
