@@ -14,20 +14,21 @@ from terminaltables import SingleTable
 class User(object):
     """Class for user to store data."""
 
-    def __init__(self, gamertag, win_place=None):
+    def __init__(self, gamertag, win_place=None, kill_place=None):
         """Initialize a User class."""
         self.gamertag = gamertag
         self.win_place = win_place
+        self.kill_place = kill_place
 
 
 class GameData(object):
     """Class for storing game data."""
 
-    def __init__(self):
+    def __init__(self, duration=None, date=None, game_map=None):
         """Initialize a GameData class."""
-        self.duration = None
-        self.data = None
-        self.map = None
+        self.duration = duration
+        self.date = date
+        self.game_map = game_map
 
 
 player_stats_dict = {
@@ -88,7 +89,7 @@ def print_game_data(user, game_data):
             user.gamertag,
             game_data.duration,
             game_data.date,
-            game_data.map
+            game_data.game_map
             )
     print(response)
 
@@ -101,11 +102,11 @@ def filter_game_data(input_dict, user):
     game_data.date = time.strftime('%a, %b %d')
     game_data.duration = seconds_to_minutes(game['duration'])
     if game['mapName'] == 'Desert_Main':
-        game_data.map = 'Miramar'
+        game_data.game_map = 'Miramar'
     if game['mapName'] == 'Savage_Main':
-        game_data.map = 'Sanhok'
+        game_data.game_map = 'Sanhok'
     map_name = game['mapName'].split('_')
-    game_data.map = map_name[0]
+    game_data.game_map = map_name[0]
     print_game_data(user, game_data)
     create_dataframe(input_dict, user)
 
@@ -146,21 +147,26 @@ def create_dataframe(input_dict, user):
 
 def get_data_from_dataframe(df, user):
     """Get all necessary data from dataframe."""
-    player_data = df.loc[df['name'] == user.gamertag].values.tolist()[0]
-    user.win_place = player_data[8]
+    player_row = df.loc[df['name'] == user.gamertag]
+    user.win_place = player_row['winPlace'].values[0]
+    user.kill_place = player_row['killPlace'].values[0]
+    # print(player_row.values)
+    player_data = player_row.values.tolist()[0]
     for i in range(len(player_data)):
         if player_data[i] == 0.0:
             player_data[i] = 0
         if type(player_data[i]) is float:
             player_data[i] = "{0:.2f}".format(player_data[i])
     player_data.remove(user.gamertag)
-    player_data.pop(8)
     average_values = create_average_list(df)
-    average_values.pop(8)
     top_ten_df = df.loc[df['winPlace'] <= 10]
     top_ten = create_average_list(top_ten_df)
-    top_ten.pop(8)
-    print_table(player_data, average_values, top_ten)
+    values_list = [player_data, average_values, top_ten]
+    for i in range(len(values_list)):
+        values_list[i].pop(8)
+        values_list[i].pop(5)
+        print(len(values_list[i]))
+    print_table(values_list[0], values_list[1], values_list[2])
 
 
 def create_average_list(df):
@@ -183,7 +189,6 @@ def print_table(player, overall, top_ten):
         'Assists',
         'DBNOs',
         'Longest Kill (m)',
-        'Kill Place',
         'Kill Points',
         'Damage Dealt',
         'Walk Distance (m)',
@@ -200,7 +205,7 @@ def print_table(player, overall, top_ten):
     for i in range(len(labels)):
         row = []
         row.append(labels[i])
-        if i == 11:
+        if i == 10:
             row.append(seconds_to_minutes(float(player[i])))
             row.append(seconds_to_minutes(float(overall[i])))
             row.append(seconds_to_minutes(float(top_ten[i])))
@@ -239,7 +244,6 @@ def run_pubg():
         get_player_match_id()
     elif user_input == '2':
         user = User('example')
-        gamertag = 'example'
         filter_game_data(data, user)
     else:
         print('OPTION NOT VALID')
