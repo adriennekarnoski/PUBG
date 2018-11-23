@@ -81,7 +81,7 @@ def get_player_match_id():
 def print_game_data(user, game_data):
     """Function to print game data."""
     response = """
-        {}'s Last Match
+        {}'s Last match
 
         Game Duration: {}
         Date: {}
@@ -165,8 +165,7 @@ def get_data_from_dataframe(df, user):
     for i in range(len(values_list)):
         values_list[i].pop(8)
         values_list[i].pop(5)
-        print(len(values_list[i]))
-    print_table(values_list[0], values_list[1], values_list[2])
+    create_table(user, values_list[0], values_list[1], values_list[2])
 
 
 def create_average_list(df):
@@ -181,7 +180,7 @@ def create_average_list(df):
     return output_list
 
 
-def print_table(player, overall, top_ten):
+def create_table(user, player, overall, top_ten):
     """Return all data to user in a table."""
     labels = [
         'Kills',
@@ -200,7 +199,8 @@ def print_table(player, overall, top_ten):
         'Heals',
         'Revives',
         'Weapons Acquired']
-    data = [['', 'PERSONAL STATS', 'OVERALL AVERAGE', 'TOP TEN AVERAGE']]
+    gamertag = user.gamertag
+    data = [['', gamertag, 'OVERALL AVERAGE', 'TOP TEN AVERAGE']]
     player_score = 0
     for i in range(len(labels)):
         row = []
@@ -214,8 +214,44 @@ def print_table(player, overall, top_ten):
             row.append(overall[i])
             row.append(top_ten[i])
         data.append(row)
+    compare_user(data[1:])
     table = SingleTable(data)
-    print(table.table)
+    print_table(table)
+    # print(data[1:])
+    # print(table.table)
+
+
+def compare_user(input_list):
+    """."""
+    user_score = 0
+    more_than = [0, 1, 2, 3, 5, 6, 11]
+    for i in range(len(input_list)):
+        if i in more_than:
+            if input_list[i][1] > input_list[i][2]:
+                user_score += 1
+            if input_list[i][1] < input_list[i][2]:
+                user_score -= 1
+    if user_score > 0:
+        blame = "EVERYONE"
+    if user_score < 0:
+        blame = "JUST YOU"
+    response = """
+        Survey says: IT WAS {}
+        """.format(blame)
+    print(response)
+
+
+def print_table(table):
+    """."""
+    user_input = input('Print game stats? [Y]/[N]: ')
+    yes_repsonse = ['Y', 'y', 'yes', 'Yes', 'YES']
+    no_response = ['N', 'n', 'no', 'No']
+    if user_input in yes_repsonse:
+        print(table.table)
+    elif user_input in no_response:
+        print('no')
+    else:
+        print('not an option')
 
 
 def seconds_to_minutes(seconds):
