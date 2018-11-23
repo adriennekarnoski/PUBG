@@ -93,6 +93,7 @@ def filter_game_data(input_dict, user):
     game_data.game_map = map_name[0]
     print_game_data(user, game_data)
     create_dataframe(input_dict, user)
+    return game_data, user
 
 
 def create_dataframe(input_dict, user):
@@ -199,7 +200,8 @@ def create_table(user, player, overall, top_ten):
         data.append(row)
     compare_user(data[1:])
     table = SingleTable(data)
-    print_table(table)
+    # print_table(table)
+    print(table.table)
 
 
 def compare_user(input_list):
