@@ -5,7 +5,6 @@ from mock_data import data
 from statistics import mean
 import json
 from datetime import datetime
-import csv
 import pandas
 from terminaltables import SingleTable
 
@@ -215,15 +214,11 @@ def compare_user(input_list):
         blame = "TOO CLOSE TO TELL"
     response = " IT WAS {} ".format(blame)
     return response
-    # for i in range(6):
-    #     if i == 2:
-    #         print(response.center(width))
-    #     else:
-    #         print('\n')
 
 
 def return_to_user(compare_response, player_table):
     """Print table and other data for the user."""
+    os.system('clear')
     data = [[
         'DATE: {}'.format(game.date),
         'DURATION: {}'.format(game.duration),
@@ -231,21 +226,9 @@ def return_to_user(compare_response, player_table):
         'MAP: {}'.format(game.game_map)]]
     game_table = SingleTable(data, 'MATCH ATTRIBUTES')
     print_list = [
-        # '\n\n\n{}\n\n\n'.format(compare_response),
         '{0}{1}{2}'.format('\n' * 3, compare_response, '\n' * 3),
         game_table.table,
         player_table.table]
-    # print(game_table.table)
-    # print(player_table.table)
-    # for i in range(6):
-    #     if i == 2:
-    #         print(compare_response)
-    #     if i == 4:
-    #         print(game_table.table)
-    #     if i == 5:
-    #         print(player_table.table)
-    #     else:
-    #         print('\n')
     for i in range(len(print_list)):
         print(print_list[i])
 
@@ -260,27 +243,5 @@ def seconds_to_minutes(seconds):
     return '{}:{}'.format(minutes[0], minutes[1])
 
 
-def run_pubg():
-    """Opening function to run the program."""
-    os.system('clear')
-    opening_prompt = """
-        Please make a selection:
-
-        [1] Get stats on your last PUBG game played (Requires XBOX gamertag)
-        [2] See an example using past data
-
-        Enter selection:
-    """
-    user_input = input(opening_prompt)
-    if user_input == '1':
-        get_player_match_id()
-    elif user_input == '2':
-        user.gamertag = 'example'
-        filter_game_data(data)
-    else:
-        print('OPTION NOT VALID')
-        run_pubg()
-
 if __name__ == "__main__":
-    # run_pubg()
     get_player_match_id()
