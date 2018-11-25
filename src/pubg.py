@@ -13,7 +13,7 @@ from terminaltables import SingleTable
 class User(object):
     """Class for user to store data."""
 
-    def __init__(self, gamertag, win_place=None, kill_place=None):
+    def __init__(self, gamertag=None, win_place=None, kill_place=None):
         """Initialize a User class."""
         self.gamertag = gamertag
         self.win_place = win_place
@@ -23,23 +23,26 @@ class User(object):
 class GameData(object):
     """Class for storing game data."""
 
-    def __init__(self, duration=None, date=None, game_map=None):
+    def __init__(self, date=None, mode=None, duration=None, game_map=None):
         """Initialize a GameData class."""
-        self.duration = duration
         self.date = date
+        self.duration = duration
+        self.mode = mode
         self.game_map = game_map
 
 
-api_key = os.environ.get('API_KEY')
+game = GameData()
 
-header = {
-  "Authorization": "Bearer " + api_key,
-  "Accept": "application/vnd.api+json"
-}
+user = User()
 
 
 def make_api_call(type, data):
     """Function to make api call and return response dictionary."""
+    api_key = os.environ.get('API_KEY')
+    header = {
+      "Authorization": "Bearer " + api_key,
+      "Accept": "application/vnd.api+json"
+    }
     if type == 'gamertag':
         url = "https://api.pubg.com/shards/xbox-na/players?filter[playerNames]={}".format(data)
     if type == 'match':
@@ -52,51 +55,56 @@ def make_api_call(type, data):
 def get_player_match_id():
     """Function taking user gamertag to make api call to retun match ids."""
     gamertag = input('Please enter your gamertag: ')
-    user = User(gamertag)
-    response_matches = make_api_call('gamertag', gamertag)
+    user.gamertag = gamertag
+    if gamertag == 'example':
+        filter_game_data(data)
+    else:
+        response_matches = make_api_call('gamertag', gamertag)
+        get_last_game(response_matches)
+
+
+def get_last_game(response_matches):
+    """Take match ids and run api call on last match played."""
     try:
         match_id = response_matches['data'][0]['relationships']['matches']['data'][0]['id']
         response_game_data = make_api_call('match', match_id)
-        filter_game_data(response_game_data, user)
+        filter_game_data(response_game_data)
     except IndexError:
-        print("No matches for {} within the last 14 days".format(gamertag))
+        print("No matches for {} within the last 14 days".format(user.gamertag))
 
 
-def print_game_data(user, game_data):
-    """Function to print game data."""
-    response = """
-        {}'s Last match
-
-        Game Duration: {}
-        Date: {}
-        Map: {}""".format(
-            user.gamertag,
-            game_data.duration,
-            game_data.date,
-            game_data.game_map
-            )
-    print(response)
-
-
-def filter_game_data(input_dict, user):
+def filter_game_data(input_dict):
     """Filter out information about the game."""
-    game_data = GameData()
-    game = input_dict['data']['attributes']
-    time = datetime.strptime(game['createdAt'], "%Y-%m-%dT%H:%M:%SZ")
-    game_data.date = time.strftime('%a, %b %d')
-    game_data.duration = seconds_to_minutes(game['duration'])
-    if game['mapName'] == 'Desert_Main':
-        game_data.game_map = 'Miramar'
-    if game['mapName'] == 'Savage_Main':
-        game_data.game_map = 'Sanhok'
-    map_name = game['mapName'].split('_')
-    game_data.game_map = map_name[0]
-    print_game_data(user, game_data)
-    create_dataframe(input_dict, user)
-    return game_data, user
+    # game_data = GameData()
+    # game = input_dict['data']['attributes']
+    # time = datetime.strptime(game['createdAt'], "%Y-%m-%dT%H:%M:%SZ")
+    # game_data.date = time.strftime('%a, %b %d')
+    # game_data.duration = seconds_to_minutes(game['duration'])
+    # if game['mapName'] == 'Desert_Main':
+    #     game_data.game_map = 'Miramar'
+    # if game['mapName'] == 'Savage_Main':
+    #     game_data.game_map = 'Sanhok'
+    # map_name = game['mapName'].split('_')
+    # game_data.game_map = map_name[0]
+    # print_game_data(user, game_data)
+    # create_dataframe(input_dict, user)
+    # return game_data, user
+    game_dict = input_dict['data']['attributes']
+    time = datetime.strptime(game_dict['createdAt'], "%Y-%m-%dT%H:%M:%SZ")
+    game.date = time.strftime('%a, %b %d')
+    game.duration = seconds_to_minutes(game_dict['duration'])
+    game.mode = game_dict['gameMode']
+    if game_dict['mapName'] == 'Desert_Main':
+        game.game_map = 'Miramar'
+    if game_dict['mapName'] == 'Savage_Main':
+        game.game_map = 'Sanhok'
+    map_name = game_dict['mapName'].split('_')
+    game.game_map = map_name[0]
+    create_dataframe(input_dict)
+    # return game, user
 
 
-def create_dataframe(input_dict, user):
+def create_dataframe(input_dict):
     """Function that takes in api response and creates a pandas dataframe."""
     d = {
         'kills': [],
@@ -127,14 +135,15 @@ def create_dataframe(input_dict, user):
                 if key in d:
                     d[key].append(value)
     df = pandas.DataFrame(d)
-    get_data_from_dataframe(df, user)
+    get_data_from_dataframe(df)
 
 
-def get_data_from_dataframe(df, user):
+def get_data_from_dataframe(df):
     """Get all necessary data from dataframe."""
     player_row = df.loc[df['name'] == user.gamertag]
     user.win_place = player_row['winPlace'].values[0]
     user.kill_place = player_row['killPlace'].values[0]
+    print('win place: {} kill place: {}'.format(user.win_place, user.kill_place))
     player_data = player_row.values.tolist()[0]
     for i in range(len(player_data)):
         if player_data[i] == 0.0:
@@ -149,7 +158,7 @@ def get_data_from_dataframe(df, user):
     for i in range(len(values_list)):
         values_list[i].pop(8)
         values_list[i].pop(5)
-    create_table(user, values_list[0], values_list[1], values_list[2])
+    create_table(values_list[0], values_list[1], values_list[2])
 
 
 def create_average_list(df):
@@ -164,7 +173,7 @@ def create_average_list(df):
     return output_list
 
 
-def create_table(user, player, overall, top_ten):
+def create_table(player, overall, top_ten):
     """Create a table for returning to the user."""
     labels = [
         'Kills',
@@ -198,14 +207,16 @@ def create_table(user, player, overall, top_ten):
             row.append(overall[i])
             row.append(top_ten[i])
         data.append(row)
-    compare_user(data[1:])
-    table = SingleTable(data)
-    # print_table(table)
+    table = SingleTable(data, 'PLAYER DATA')
+    compare_user(data[1:], table)
+    # print_game_data()
+    return_to_user()
     print(table.table)
 
 
-def compare_user(input_list):
+def compare_user(input_list, table):
     """Compare user stats to the average game stats."""
+    width = os.get_terminal_size().columns
     user_score = 0
     more_than = [0, 1, 2, 3, 5, 6, 11]
     for i in range(len(input_list)):
@@ -218,23 +229,25 @@ def compare_user(input_list):
         blame = "EVERYONE"
     if user_score < 0:
         blame = "JUST YOU"
-    response = """
-        Survey says: IT WAS {}
-        """.format(blame)
-    print(response)
+    if user_score == 0:
+        blame = "TOO CLOSE TO TELL"
+    response = "IT WAS {}".format(blame)
+    for i in range(6):
+        if i == 2:
+            print(response.center(width))
+        else:
+            print('\n')
 
 
-def print_table(table):
-    """Give user the option to print data in a table."""
-    user_input = input('Print game stats? [Y]/[N]: ')
-    yes_repsonse = ['Y', 'y', 'yes', 'Yes', 'YES']
-    no_response = ['N', 'n', 'no', 'No']
-    if user_input in yes_repsonse:
-        print(table.table)
-    elif user_input in no_response:
-        pass
-    else:
-        print('not an option')
+def return_to_user():
+    """Print table and other data for the user."""
+    data = [[
+        'DATE: {}'.format(game.date),
+        'DURATION: {}'.format(game.duration),
+        'MODE: {}'.format(game.mode),
+        'MAP: {}'.format(game.game_map)]]
+    table = SingleTable(data, 'MATCH ATTRIBUTES')
+    print(table.table)
 
 
 def seconds_to_minutes(seconds):
@@ -245,6 +258,23 @@ def seconds_to_minutes(seconds):
         minutes[0] = int(minutes[0]) + 1
         minutes[1] = int(minutes[1]) - 60
     return '{}:{}'.format(minutes[0], minutes[1])
+
+
+def print_game_data():
+    """Function to print game data."""
+    width = os.get_terminal_size().columns
+    response = """
+        Date: {}
+        Game Duration: {}
+        Game Mode: {}
+        Map: {}
+        """.format(
+            game.date,
+            game.duration,
+            game.mode,
+            game.game_map,
+            ).center(width)
+    print(response)
 
 
 def run_pubg():
@@ -262,11 +292,12 @@ def run_pubg():
     if user_input == '1':
         get_player_match_id()
     elif user_input == '2':
-        user = User('example')
-        filter_game_data(data, user)
+        user.gamertag = 'example'
+        filter_game_data(data)
     else:
         print('OPTION NOT VALID')
         run_pubg()
 
 if __name__ == "__main__":
-    run_pubg()
+    # run_pubg()
+    get_player_match_id()
