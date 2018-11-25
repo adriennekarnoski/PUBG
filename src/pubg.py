@@ -75,20 +75,6 @@ def get_last_game(response_matches):
 
 def filter_game_data(input_dict):
     """Filter out information about the game."""
-    # game_data = GameData()
-    # game = input_dict['data']['attributes']
-    # time = datetime.strptime(game['createdAt'], "%Y-%m-%dT%H:%M:%SZ")
-    # game_data.date = time.strftime('%a, %b %d')
-    # game_data.duration = seconds_to_minutes(game['duration'])
-    # if game['mapName'] == 'Desert_Main':
-    #     game_data.game_map = 'Miramar'
-    # if game['mapName'] == 'Savage_Main':
-    #     game_data.game_map = 'Sanhok'
-    # map_name = game['mapName'].split('_')
-    # game_data.game_map = map_name[0]
-    # print_game_data(user, game_data)
-    # create_dataframe(input_dict, user)
-    # return game_data, user
     game_dict = input_dict['data']['attributes']
     time = datetime.strptime(game_dict['createdAt'], "%Y-%m-%dT%H:%M:%SZ")
     game.date = time.strftime('%a, %b %d')
@@ -101,7 +87,6 @@ def filter_game_data(input_dict):
     map_name = game_dict['mapName'].split('_')
     game.game_map = map_name[0]
     create_dataframe(input_dict)
-    # return game, user
 
 
 def create_dataframe(input_dict):
@@ -143,7 +128,6 @@ def get_data_from_dataframe(df):
     player_row = df.loc[df['name'] == user.gamertag]
     user.win_place = player_row['winPlace'].values[0]
     user.kill_place = player_row['killPlace'].values[0]
-    print('win place: {} kill place: {}'.format(user.win_place, user.kill_place))
     player_data = player_row.values.tolist()[0]
     for i in range(len(player_data)):
         if player_data[i] == 0.0:
@@ -208,13 +192,11 @@ def create_table(player, overall, top_ten):
             row.append(top_ten[i])
         data.append(row)
     table = SingleTable(data, 'PLAYER DATA')
-    compare_user(data[1:], table)
-    # print_game_data()
-    return_to_user()
-    print(table.table)
+    compare_response = compare_user(data[1:])
+    return_to_user(compare_response, table)
 
 
-def compare_user(input_list, table):
+def compare_user(input_list):
     """Compare user stats to the average game stats."""
     width = os.get_terminal_size().columns
     user_score = 0
@@ -231,23 +213,41 @@ def compare_user(input_list, table):
         blame = "JUST YOU"
     if user_score == 0:
         blame = "TOO CLOSE TO TELL"
-    response = "IT WAS {}".format(blame)
-    for i in range(6):
-        if i == 2:
-            print(response.center(width))
-        else:
-            print('\n')
+    response = " IT WAS {} ".format(blame)
+    return response
+    # for i in range(6):
+    #     if i == 2:
+    #         print(response.center(width))
+    #     else:
+    #         print('\n')
 
 
-def return_to_user():
+def return_to_user(compare_response, player_table):
     """Print table and other data for the user."""
     data = [[
         'DATE: {}'.format(game.date),
         'DURATION: {}'.format(game.duration),
         'MODE: {}'.format(game.mode),
         'MAP: {}'.format(game.game_map)]]
-    table = SingleTable(data, 'MATCH ATTRIBUTES')
-    print(table.table)
+    game_table = SingleTable(data, 'MATCH ATTRIBUTES')
+    print_list = [
+        # '\n\n\n{}\n\n\n'.format(compare_response),
+        '{0}{1}{2}'.format('\n' * 3, compare_response, '\n' * 3),
+        game_table.table,
+        player_table.table]
+    # print(game_table.table)
+    # print(player_table.table)
+    # for i in range(6):
+    #     if i == 2:
+    #         print(compare_response)
+    #     if i == 4:
+    #         print(game_table.table)
+    #     if i == 5:
+    #         print(player_table.table)
+    #     else:
+    #         print('\n')
+    for i in range(len(print_list)):
+        print(print_list[i])
 
 
 def seconds_to_minutes(seconds):
@@ -258,23 +258,6 @@ def seconds_to_minutes(seconds):
         minutes[0] = int(minutes[0]) + 1
         minutes[1] = int(minutes[1]) - 60
     return '{}:{}'.format(minutes[0], minutes[1])
-
-
-def print_game_data():
-    """Function to print game data."""
-    width = os.get_terminal_size().columns
-    response = """
-        Date: {}
-        Game Duration: {}
-        Game Mode: {}
-        Map: {}
-        """.format(
-            game.date,
-            game.duration,
-            game.mode,
-            game.game_map,
-            ).center(width)
-    print(response)
 
 
 def run_pubg():
