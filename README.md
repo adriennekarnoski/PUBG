@@ -12,7 +12,7 @@ and returns and the answer based off the comparison. The game average, user's st
 and the averages of the players that placed in the top ten are printed in a table
 for the user to view.
 
-Stats included:
+#### Stats included:
 
 **Kills:** Enemy players killed
 
