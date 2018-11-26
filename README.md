@@ -1,21 +1,18 @@
 # PUBG: Did everyone suck, or was it just me?
 
-**Author**: [Adrienne Karnoski](https://github.com/adriennekarnoski)
+Program for taking a user's XBOX gamertag and returning a (roughly estimated, purely for entertainment)
+answer to the question I often ask myself after a round of PUBG: *Did everyone suck, or was it just me?*
 
-**Version**: 1.0.0
+## Description
 
-## Overview
+After entering the user's gamertag, data on the last completed match is collected from the PUBG 
+[API](https://documentation.playbattlegrounds.com/en/introduction.html). 
+The program compares the overall average with the user's personal stats 
+and returns and the answer based off the comparison. The game average, user's stats,
+and the averages of the players that placed in the top ten are printed in a table
+for the user to view.
 
-Using the PUBG [API](https://documentation.playbattlegrounds.com/en/introduction.html), 
-the program takes a user's XBOX gamertag and returns a (roughly estimated, purely for entertainment)
-answer to the question I often ask myself after a round of PUBG:
-
-*Did everyone suck, or was it just me?*
-
-###### Included in the response 
-
-The program also returns data on the player's personal stats, averages of all players,
-and averages of the top ten players in the match. Stats include:
+Stats included:
 
 **Kills:** Enemy players killed
 
@@ -69,7 +66,8 @@ Install the program along with it's requirements, via pip:
 ```
 (ENV) PUBG $ pip install .
 ```
-### Configuration
+#### Configuration
+
 The program requires a development API key, which you can get [here](https://developer.pubg.com/?locale=en#).
 
 After receiving your API key, save it as an environmental variable:
@@ -79,3 +77,14 @@ export API_KEY='<your-api-key>'
 
 **The program can run using mock data without the need for an API key by entering 'example' when prompted for gamertag**
 
+### AUTHOR
+
+ [Adrienne Karnoski](https://github.com/adriennekarnoski)
+
+### VERSION
+
+1.0.0
+
+### LICENSE
+
+[MIT License](https://github.com/adriennekarnoski/PUBG/blob/master/LICENSE)
