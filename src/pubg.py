@@ -86,6 +86,7 @@ def filter_game_data(input_dict):
     map_name = game_dict['mapName'].split('_')
     game.game_map = map_name[0]
     create_dataframe(input_dict)
+    return user, game
 
 
 def create_dataframe(input_dict):
@@ -120,6 +121,7 @@ def create_dataframe(input_dict):
                     d[key].append(value)
     df = pandas.DataFrame(d)
     get_data_from_dataframe(df)
+    return df
 
 
 def get_data_from_dataframe(df):
@@ -197,7 +199,6 @@ def create_table(player, overall, top_ten):
 
 def compare_user(input_list):
     """Compare user stats to the average game stats."""
-    width = os.get_terminal_size().columns
     user_score = 0
     more_than = [0, 1, 2, 3, 5, 6, 11]
     for i in range(len(input_list)):

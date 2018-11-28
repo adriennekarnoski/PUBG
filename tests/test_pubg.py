@@ -5,9 +5,9 @@ import mock
 @pytest.fixture
 def mock_api():
     from mock_data import data
-    from pubg import User, filter_game_data
-    user = User('example')
-    return filter_game_data(data, user)
+    from pubg import user, filter_game_data
+    user.gamertag = 'example'
+    return filter_game_data(data)
 
 
 # @pytest.fixture
@@ -25,11 +25,11 @@ def mock_api():
 def test_more_things_work(mock_api):
     """Test function return correct class attributes."""
     from pubg import filter_game_data
-    game_data, user = mock_api
+    user, game = mock_api
     assert user.gamertag == 'example'
-    assert game_data.duration == '30:53'
-    assert game_data.date == 'Thu, Nov 15'
-    assert game_data.map == 'Erangel'
+    assert game.duration == '30:53'
+    assert game.date == 'Thu, Nov 15'
+    assert game.game_map == 'Erangel'
 
 
 # def test_dict(game_dict):
